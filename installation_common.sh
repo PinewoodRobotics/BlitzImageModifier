@@ -1,7 +1,5 @@
 #!/bin/bash
 
-PYTHON_VERSION="3.12.6"
-
 sudo apt-get update
 sudo apt install -y \
     curl \
@@ -32,25 +30,15 @@ sudo apt install -y \
     libffi-dev \
     liblzma-dev
 
-curl https://pyenv.run | bash
-
-export PATH="$HOME/.pyenv/bin:$PATH"
-eval "$(pyenv init -)"
-eval "$(pyenv virtualenv-init -)"
-
-if ! grep -q 'pyenv init' ~/.bashrc; then
-cat << 'EOF' >> ~/.bashrc
-
-# Pyenv configuration
-export PATH="$HOME/.pyenv/bin:$PATH"
-eval "$(pyenv init -)"
-eval "$(pyenv virtualenv-init -)"
-EOF
+PYTHON3_PATH="$(command -v python3)"
+if [ -z "$PYTHON3_PATH" ]; then
+  echo "python3 is not installed; aborting." >&2
+  exit 1
 fi
 
-pyenv install -s $PYTHON_VERSION
-pyenv global $PYTHON_VERSION
+sudo ln -sf "$PYTHON3_PATH" /usr/local/bin/python
 
+python3 --version
 python --version
 
 mkdir ~/Documents
