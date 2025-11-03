@@ -30,15 +30,8 @@ sudo apt install -y \
     libffi-dev \
     liblzma-dev
 
-if ! command -v rustc >/dev/null 2>&1; then
-  echo "Rust is not installed. Installing Rust via rustup..."
-  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-  export PATH="$HOME/.cargo/bin:$PATH"
-else
-  echo "Rust is already installed."
-fi
-
-rustc --version || echo "Rust installation failed or path not set."
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+source "$HOME/.cargo/env"
 
 PYTHON3_PATH="$(command -v python3)"
 if [ -z "$PYTHON3_PATH" ]; then
