@@ -37,6 +37,8 @@ jobs:
             ./installation_autobahn.sh
             mkdir -p /opt/blitz/
             echo "${{ github.ref_name }};${{ matrix.name }}" > /opt/blitz/image-version
+            chmod +x ./post_install.sh
+            ./post_install.sh
       - name: Compress built image
         run: |
           mv ${{ steps.install_deps.outputs.image }} blitz_${{ matrix.name }}.img

@@ -1,0 +1,11 @@
+[Unit]
+Description=Blitz project runner on boot
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/blitzprojstartup.sh
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
