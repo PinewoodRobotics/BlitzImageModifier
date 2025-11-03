@@ -41,4 +41,4 @@ sudo ln -sf "$PYTHON3_PATH" /usr/local/bin/python
 python3 --version
 python --version
 
-mkdir ~/Documents
+mkdir -p ~/Documents
