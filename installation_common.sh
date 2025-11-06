@@ -28,7 +28,15 @@ sudo apt install -y \
     libreadline-dev \
     libsqlite3-dev \
     libffi-dev \
-    liblzma-dev
+    liblzma-dev \ 
+    openssh-server
+
+sudo systemctl enable ssh
+# sudo systemctl start ssh
+# sudo systemctl status ssh
+
+sudo systemctl enable avahi-daemon
+# sudo systemctl start avahi-daemon
 
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 source "$HOME/.cargo/env"

@@ -27,8 +27,6 @@ jobs:
           bind_mount_repository: true
           base_image: ${{ matrix.base_image }}
           commands: |
-            chmod +x ./${{matrix.script}}
-            ./${{ matrix.script }}
             chmod +x ./installation_common.sh
             ./installation_common.sh
             chmod +x ./installation_blitz.sh
@@ -39,6 +37,8 @@ jobs:
             echo "${{ github.ref_name }};${{ matrix.name }}" > /opt/blitz/image-version
             chmod +x ./post_install.sh
             ./post_install.sh
+            chmod +x ./${{matrix.script}}
+            ./${{ matrix.script }}
       - name: Compress built image
         run: |
           mv ${{ steps.install_deps.outputs.image }} blitz_${{ matrix.name }}.img
