@@ -1,80 +1,138 @@
-# BlitzImageModifier
+## BlitzImageModifier
 
-A tool for building and customizing Raspberry Pi images for Blitz Bitcoin/Lightning node deployments.
+#### Disclaimer: README is written by AI and reviewed by me.
 
-## Overview
+Create a preconfigured Raspberry Pi OS image (Pi 5, Bookworm arm64) with the Pinewood Robotics B.L.I.T.Z stack and Autobahn preinstalled. The build runs entirely inside Docker using QEMU, expands the base image, chroots into it to install packages and services, and then exports a compressed `.img.xz` ready to flash.
 
-BlitzImageMidifier automates the process of creating custom Raspberry Pi OS images with pre-installed dependencies and configurations required for Blitz node deployments. The project uses GitHub Actions to build optimized images for various Raspberry Pi models.
+### What this does
 
-## Features
+- **Downloads** Raspberry Pi OS Lite (arm64 Bookworm) base image
+- **Expands** the image filesystem to add space (+4 GB by default)
+- **Chroots** into the image using QEMU to install software
+- **Installs** common system deps, Rust toolchain, SSH, mDNS
+- **Installs** B.L.I.T.Z (branch `merge-backend`) and Autobahn
+- **Applies** USB udev naming rules and enables required services
+- **Configures** a first-boot service that asks for a device name
+- **Exports** and **compresses** the final image to `outputs/`
 
-- Automated image building for Raspberry Pi devices
-- Pre-configured with necessary dependencies
-- Version tracking integrated into built images
-- CI/CD pipeline for automated builds
-- Support for Raspberry Pi 5 (with extensibility for other models)
+## Prerequisites
 
-## Build Process
+- Docker Engine (or Docker Desktop) and Docker Compose
+- Host OS: Linux recommended; macOS with Docker Desktop also works (runs in a Linux VM under the hood). Windows WSL2 with Docker may work as well.
+- Sufficient disk space (downloaded image + expanded working set; plan for ~10–15 GB)
+- Internet access (clones/installs inside the chroot)
 
-The project uses GitHub Actions to automatically build Raspberry Pi images when code is pushed to the repository. The build process:
+## Quick start
 
-1. Checks out the repository code
-2. Fetches git tags for versioning
-3. Uses ARM runner to build on Raspberry Pi hardware
-4. Runs platform-specific installation scripts
-5. Installs dependencies
-6. Creates version metadata
-7. Compresses the final image for distribution
+```bash
+git clone https://github.com/your-org/BlitzImageModifier.git
+cd BlitzImageModifier
 
-## Current Build Targets
-
-- **Raspberry Pi 5**: Built using Raspbian OS Lite ARM64 (Bookworm)
-
-## Requirements
-
-- GitHub Actions (for automated builds)
-- Raspberry Pi hardware (for ARM runner)
-- Sufficient disk space for image creation and compression
-
-## Usage
-
-### Automated Builds
-
-Images are automatically built via GitHub Actions on every push to the repository. Built images are available as artifacts in the Actions tab.
-
-### Local Development
-
-To build images locally, you'll need to:
-
-1. Set up a Raspberry Pi environment
-2. Run the installation scripts:
-   ```bash
-   chmod +x scripts/install/raspi5.sh
-   ./scripts/install/raspi5.sh
-   ./scripts/install_deps.sh
-   ```
-
-## Version Tracking
-
-Each built image includes version information stored at `/opt/blitz/image-version`, which contains the git ref name and build target name.
-
-## Project Structure
-
-```
-BlitzImageMidifier/
-├── .github/
-│   └── workflows/
-│       └── main.yml          # CI/CD build pipeline
-├── scripts/
-│   ├── install/
-│   │   └── raspi5.sh         # Raspberry Pi 5 installation script
-│   └── install_deps.sh       # Dependency installation script
-└── README.md
+# Build and run the image creation pipeline
+docker compose up --build
 ```
 
-## Contributing
+When the pipeline finishes, your output will be in:
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
+```bash
+outputs/pi5_flash_image.img.xz
+```
+
+You can then flash it to a microSD card (Linux example):
+
+```bash
+xz -d outputs/pi5_flash_image.img.xz
+
+# Replace /dev/sdX with your target device (DANGER: double-check!)
+sudo dd if=outputs/pi5_flash_image.img of=/dev/sdX bs=4M status=progress conv=fsync
+```
+
+## How it works (high level)
+
+- `Dockerfile`
+
+  - Based on `ubuntu:24.04`, installs tooling (qemu-user-static, kpartx, parted, e2fsprogs, etc.)
+  - Downloads `raspios-bookworm-arm64-lite` and expands the image by 4 GB
+  - Entrypoint runs `setup_image.sh` then `export_image_and_compress.sh`
+
+- `setup_image.sh`
+
+  - Attaches loop devices, fixes/extends partitions, runs `resize2fs`
+  - Mounts the image (root and boot), binds `/dev`, `/proc`, `/sys`, `/workspace`
+  - Copies `qemu-aarch64-static` into the chroot for ARM emulation
+  - Chroots into the image and runs `main_startup.sh pi5.sh`
+
+- Inside the chroot (`main_startup.sh`)
+
+  - Runs hardware script `pi5.sh` (installs udev rule)
+  - Runs `installation_common.sh` (packages, Rust, SSH/mDNS enable)
+  - Runs `installation_blitz.sh` (clones B.L.I.T.Z, `scripts/install.sh` with default name)
+  - Runs `installation_autobahn.sh` (clones Autobahn, installs)
+  - Runs `post_install.sh` (installs and enables first-boot service)
+
+- `export_image_and_compress.sh`
+  - Cleanly unmounts/breaks down loop/mapper devices
+  - Renames the image, compresses to `.img.xz`, and copies into `./outputs/`
+
+## First boot behavior
+
+- A systemd service (`blitz_project.service`) runs `/usr/local/bin/blitzprojstartup.sh`.
+- On first boot, if the default name is still set, it will prompt on the console for a new device name and apply it (`hostnamectl`, `/etc/hosts`, restart Avahi/SSH), then reboot.
+  - If you need a non-interactive first boot, pre-create `name.txt` inside the image at:
+    - `/opt/blitz/B.L.I.T.Z/system_data/name.txt`
+
+## Customization
+
+- **Base image version**: in `Dockerfile` (`wget` URL). Update to a newer Raspberry Pi OS image if desired.
+- **Extra space**: in `Dockerfile` (`truncate -s +4G ...`). Increase if you need more room preinstalled.
+- **Hardware script**: currently `main_startup.sh` runs `pi5.sh`. Add your own script and change the argument in `setup_image.sh` (`main_startup.sh <your-script>.sh`).
+- **B.L.I.T.Z branch**: in `installation_blitz.sh` (`BRANCH_NAME="merge-backend"`). Change as needed.
+- **Default device name**: `installation_blitz.sh` (`DEFAULT_PI_NAME`). This is used on first boot before prompting.
+- **udev rules**: edit `installation/system-patch/90-usb-port-names.rules` or adapt `pi5.sh` to your hardware.
+- **Output filename**: `export_image_and_compress.sh` is invoked with `pi5_flash_image` by default (from `Dockerfile CMD`). Change it if you want a different name.
+
+## Directory overview
+
+- `Dockerfile`: Builder and orchestrator for the image creation
+- `compose.yml`: Docker Compose service (privileged) that runs the pipeline
+- `setup_image.sh`: Mounts/extends the downloaded image and enters chroot
+- `main_startup.sh`: Orchestrates installs and setup inside the chroot
+- `pi5.sh`: Installs udev rule for USB port naming
+- `installation_common.sh`: Common packages, Rust toolchain, SSH/mDNS enable
+- `installation_blitz.sh`: Clones/installs B.L.I.T.Z
+- `installation_autobahn.sh`: Clones/installs Autobahn
+- `post_install.sh`: Installs and enables first-boot naming service
+- `blitz_project.service`: systemd unit for first-boot naming
+- `blitzprojstartup.sh`: prompts for device name on first boot
+- `export_image_and_compress.sh`: unmounts, compresses, and copies output
+- `outputs/`: final `.img.xz` artifacts
+
+## Troubleshooting
+
+- The build needs a privileged container for loop/mapper devices. Ensure Compose runs with `privileged: true` (already in `compose.yml`).
+- On macOS/Windows, Docker runs inside a Linux VM; the pipeline runs in that VM and should still work, but performance can be slower.
+- If the build fails while chrooting, verify that `qemu-user-static` was copied and `binfmt` is active (handled by the Dockerfile).
+- If the output file is missing, check container logs for unmount/cleanup issues near the end.
+- If first-boot name prompt is undesirable (e.g., headless), pre-seed `name.txt` as noted above.
+
+## Common commands
+
+```bash
+# Build and run
+docker compose up --build
+
+# Clean Compose state (if you re-run)
+docker compose down -v
+
+# Remove old outputs (optional)
+rm -f outputs/*.img outputs/*.img.xz
+```
+
+## Notes
+
+- Port `5555` is exposed in `compose.yml` for possible stack services; adjust as needed.
+- SSH and Avahi (mDNS) are enabled in the image so it is discoverable on the network as soon as it boots.
+
+## License
+
+Add a license here (e.g., MIT, Apache-2.0) if applicable.
