@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 INSTALLATION_DIR="/opt/blitz"
 NAME_PATH="$INSTALLATION_DIR/B.L.I.T.Z/system_data/name.txt"

@@ -1,14 +1,20 @@
 #!/bin/bash
+set -euo pipefail
 
-ARG=$1
+HARDWARE_SCRIPT=$1
 
-chmod +x ./$ARG
-./$ARG
+# Hardware-specific configuration
+chmod +x ./$HARDWARE_SCRIPT
+./$HARDWARE_SCRIPT
 
+# Install system dependencies
 bash ./installation_common.sh
+
+# Install BLITZ software
 bash ./installation_blitz.sh
+
+# Install Autobahn
 bash ./installation_autobahn.sh
 
-mkdir -p /opt/blitz/
-
+# Post-installation setup
 bash ./post_install.sh

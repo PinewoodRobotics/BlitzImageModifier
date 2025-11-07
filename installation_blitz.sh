@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 INSTALLATION_DIR="/opt/blitz"
 BRANCH_NAME="merge-backend"

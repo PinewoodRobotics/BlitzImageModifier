@@ -1,7 +1,8 @@
 #!/bin/bash
+set -euo pipefail
 
 sudo apt-get update
-sudo apt-get install -y \
+sudo apt-get install -y --no-install-recommends \
     curl \
     git \
     build-essential \
@@ -13,8 +14,8 @@ sudo apt-get install -y \
     python3 \
     python3-venv \
     python3-dev \
-    python3-opencv \
     python3-pip \
+    python3-opencv \
     libssl-dev \
     libclang-dev \
     sshpass \
