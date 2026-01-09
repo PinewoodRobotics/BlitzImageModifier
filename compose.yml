@@ -1,8 +1,12 @@
 version: "3.8"
 
 services:
-  pi5:
-    build: .
+  blitz_compilation:
+    build:
+      context: .
+      args:
+        - COMPILE_ALL=${COMPILE_ALL}
+        - FOR_X=${FOR_X}
     privileged: true
     stdin_open: true
     volumes:

@@ -1,7 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
-IMAGE_FILE="2024-07-04-raspios-bookworm-arm64-lite.img"
+IMAGE_FILE=$1
+RUN_INSIDE_CHROOT_SCRIPT=$2
+
 MOUNT_POINT="/mnt/raspios"
 WORKSPACE="/workspace"
 
@@ -55,5 +57,4 @@ echo "$WORKSPACE is available inside the environment"
 echo "Running interactive shell..."
 echo ""
 
-chroot "$MOUNT_POINT" /bin/bash -lc 'cd /workspace && bash ./main_startup.sh pi5.sh'
-
+chroot "$MOUNT_POINT" /bin/bash -lc "set -euo pipefail; cd /workspace && bash \"$RUN_INSIDE_CHROOT_SCRIPT\""

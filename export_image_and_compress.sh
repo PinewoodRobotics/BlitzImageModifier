@@ -1,17 +1,17 @@
 #!/bin/bash
-ARGS=$1
-
 set -euo pipefail
 
-IMAGE_FILE="2024-07-04-raspios-bookworm-arm64-lite.img"
+INPUT_IMAGE=${1:?INPUT_IMAGE argument required (path to .img)}
+OUTPUT_BASENAME=${2:?OUTPUT_BASENAME argument required (e.g. pi5_flash_image)}
+DO_COMPRESSION=${3:-true}
+
 MOUNT_POINT="/mnt/raspios"
-WORKSPACE="/workspace"
 
 echo "Unmounting everything that setup_image.sh mounted..."
 
-LOOP_DEV=$(losetup -j "$IMAGE_FILE" | cut -d: -f1)
+LOOP_DEV=$(losetup -j "$INPUT_IMAGE" | cut -d: -f1)
 if [ -z "$LOOP_DEV" ]; then
-  echo "❌ No loop device found for $IMAGE_FILE"
+  echo "❌ No loop device found for $INPUT_IMAGE"
   exit 1
 fi
 
@@ -30,10 +30,16 @@ sync
 losetup -d "$LOOP_DEV" || true
 
 echo "Image size:"
-ls -lh "$IMAGE_FILE"
-
-echo "Done with image! Exporting and compressing..."
-mv "$IMAGE_FILE" "${ARGS}.img"
+ls -lh "$INPUT_IMAGE"
 
 mkdir -p /host/outputs/
-cp "${ARGS}.img" /host/outputs/${ARGS}.img
+echo "Done with image! Exporting..."
+cp "$INPUT_IMAGE" "/host/outputs/${OUTPUT_BASENAME}.img"
+
+if [ "$DO_COMPRESSION" = true ]; then
+  echo "Compressing image..."
+  xz -T 0 -v "/host/outputs/${OUTPUT_BASENAME}.img"
+  echo "Image compressed successfully"
+else
+  echo "Skipping compression"
+fi

@@ -1,11 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-HARDWARE_SCRIPT=$1
-
-# Hardware-specific configuration
-chmod +x ./$HARDWARE_SCRIPT
-./$HARDWARE_SCRIPT
+cd /workspace/installation/modules/
 
 # Install system dependencies
 bash ./installation_common.sh
@@ -16,5 +12,4 @@ bash ./installation_blitz.sh
 # Install Autobahn
 bash ./installation_autobahn.sh
 
-# Post-installation setup
-bash ./post_install.sh
+cd /workspace

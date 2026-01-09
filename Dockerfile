@@ -1,6 +1,13 @@
 FROM ubuntu:24.04
 
+ARG COMPILE_ALL=false
+ARG FOR_X=pi5
+
+RUN echo "COMPILE_ALL: $COMPILE_ALL"
+RUN echo "FOR_X: $FOR_X"
+
 RUN apt-get update && apt-get install -y \
+    bash \
     xz-utils \
     wget \
     kpartx \
@@ -9,18 +16,14 @@ RUN apt-get update && apt-get install -y \
     systemd-container \
     parted \
     e2fsprogs \
-    gdisk
+    gdisk \
+    util-linux
 
 WORKDIR /workspace
 
-RUN wget https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-07-04/2024-07-04-raspios-bookworm-arm64-lite.img.xz && \
-    xz -d 2024-07-04-raspios-bookworm-arm64-lite.img.xz && \
-    echo "Image downloaded and extracted" && \
-    truncate -s +6G 2024-07-04-raspios-bookworm-arm64-lite.img && \
-    echo "Image expanded by 6GB"
-
-RUN mkdir -p /mnt/raspios
-
 COPY . /workspace
 
-CMD bash ./setup_image.sh && bash ./export_image_and_compress.sh pi5_flash_image
+ENV COMPILE_ALL=${COMPILE_ALL}
+ENV FOR_X=${FOR_X}
+
+CMD bash -lc 'mkdir -p /mnt/raspios && bash installation/devices_and_distros/build.bash "$COMPILE_ALL" "$FOR_X"'

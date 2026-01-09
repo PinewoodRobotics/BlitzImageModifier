@@ -1,4 +1,7 @@
-docker-pi5:
-	docker run -it --rm \
-	-v $(shell pwd):/workspace \
-	docker-pi5
+ARGS ?= pi5
+
+build-all:
+	COMPILE_ALL=true docker-compose up --build
+
+build-for:
+	COMPILE_ALL=false FOR_X=$(ARGS) docker-compose up --build

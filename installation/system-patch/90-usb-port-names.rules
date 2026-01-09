@@ -3,18 +3,18 @@
 # Add capture-capability guard to avoid metadata nodes.
 # Serial: match the same port, no index concept for tty.
 
-# ---------- TOP LEFT (usb4 port 1) ----------
-SUBSYSTEM=="video4linux", KERNELS=="3-1:1.0", ATTR{index}=="0", ENV{ID_V4L_CAPABILITIES}=="*:capture:*", SYMLINK+="usb_top_left_cam", TAG+="uaccess"
-SUBSYSTEM=="tty",         KERNELS=="4-1",                                             SYMLINK+="usb_top_left_tty", TAG+="uaccess"
+# ---------- CAMERA 1 (usb4 port 1) ----------
+SUBSYSTEM=="video4linux", KERNELS=="3-1:1.0", ATTR{index}=="0", ENV{ID_V4L_CAPABILITIES}=="*:capture:*", SYMLINK+="usb_cam1", TAG+="uaccess"
+SUBSYSTEM=="tty",         KERNELS=="4-1",                                             SYMLINK+="usb_cam1_tty", TAG+="uaccess"
 
-# ---------- TOP RIGHT (usb2 port 2) ----------
-SUBSYSTEM=="video4linux", KERNELS=="1-2:1.0", ATTR{index}=="0", ENV{ID_V4L_CAPABILITIES}=="*:capture:*", SYMLINK+="usb_top_right_cam", TAG+="uaccess"
-SUBSYSTEM=="tty",         KERNELS=="2-2",                                             SYMLINK+="usb_top_right_tty", TAG+="uaccess"
+# ---------- CAMERA 2 (usb2 port 2) ----------
+SUBSYSTEM=="video4linux", KERNELS=="1-2:1.0", ATTR{index}=="0", ENV{ID_V4L_CAPABILITIES}=="*:capture:*", SYMLINK+="usb_cam2", TAG+="uaccess"
+SUBSYSTEM=="tty",         KERNELS=="2-2",                                             SYMLINK+="usb_cam2_tty", TAG+="uaccess"
 
-# ---------- BOTTOM LEFT (usb2 port 1) ----------
-SUBSYSTEM=="video4linux", KERNELS=="1-1:1.0", ATTR{index}=="0", ENV{ID_V4L_CAPABILITIES}=="*:capture:*", SYMLINK+="usb_bottom_left_cam", TAG+="uaccess"
-SUBSYSTEM=="tty",         KERNELS=="2-1",                                             SYMLINK+="usb_bottom_left_tty", TAG+="uaccess"
+# ---------- CAMERA 3 (usb2 port 1) ----------
+SUBSYSTEM=="video4linux", KERNELS=="1-1:1.0", ATTR{index}=="0", ENV{ID_V4L_CAPABILITIES}=="*:capture:*", SYMLINK+="usb_cam3", TAG+="uaccess"
+SUBSYSTEM=="tty",         KERNELS=="2-1",                                             SYMLINK+="usb_cam3_tty", TAG+="uaccess"
 
-# ---------- BOTTOM RIGHT (usb4 port 2) ----------
-SUBSYSTEM=="video4linux", KERNELS=="3-2:1.0", ATTR{index}=="0", ENV{ID_V4L_CAPABILITIES}=="*:capture:*", SYMLINK+="usb_bottom_right_cam", TAG+="uaccess"
-SUBSYSTEM=="tty",         KERNELS=="4-2",                                             SYMLINK+="usb_bottom_right_tty", TAG+="uaccess"
+# ---------- CAMERA 4 (usb4 port 2) ----------
+SUBSYSTEM=="video4linux", KERNELS=="3-2:1.0", ATTR{index}=="0", ENV{ID_V4L_CAPABILITIES}=="*:capture:*", SYMLINK+="usb_cam4", TAG+="uaccess"
+SUBSYSTEM=="tty",         KERNELS=="4-2",                                             SYMLINK+="usb_cam4_tty", TAG+="uaccess"
