@@ -12,4 +12,7 @@ bash ./installation_blitz.bash
 # Install Autobahn
 bash ./installation_autobahn.bash
 
+# Install startup script
+bash ./install_startup.bash
+
 cd /workspace
