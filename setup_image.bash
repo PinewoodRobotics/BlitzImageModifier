@@ -46,6 +46,8 @@ mount --bind /sys "$MOUNT_POINT/sys"
 mount -t devpts devpts "$MOUNT_POINT/dev/pts"
 mkdir -p "$MOUNT_POINT/workspace"
 mount --bind "$WORKSPACE" "$MOUNT_POINT/workspace"
+# Replace dangling /etc/resolv.conf symlink (common in systemd images) with host's resolv.conf for chroot DNS
+rm -f "$MOUNT_POINT/etc/resolv.conf"
 cp /etc/resolv.conf "$MOUNT_POINT/etc/resolv.conf"
 
 echo "=== Raspberry Pi OS Ready ==="

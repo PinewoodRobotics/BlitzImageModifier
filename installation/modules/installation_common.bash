@@ -2,7 +2,6 @@
 set -euo pipefail
 
 # install common packages for ALL devices
-
 sudo apt-get update
 sudo apt-get install -y --no-install-recommends \
     curl \
@@ -28,7 +27,8 @@ sudo apt-get install -y --no-install-recommends \
     libffi-dev \
     liblzma-dev \
     openssh-server \
-    python3-dev
+    python3-dev \
+    nano
 
 curl -fsSL https://pyenv.run | bash
 export PYENV_ROOT="$HOME/.pyenv"
@@ -60,5 +60,3 @@ sudo ln -sf "$PYTHON3_PATH" /usr/local/bin/python
 
 python3 --version
 python --version
-
-mkdir -p /opt/blitz
